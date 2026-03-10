@@ -110,42 +110,78 @@ done
 echo ""
 echo -e "${BLUE}═══════════════════════════════════════${NC}"
 
-# Step 2: Select target tools with TUI
-echo -e "${CYAN}Copy to which tool(s)?${NC}"
-echo ""
-echo -e "  ${YELLOW}◉${NC} ${BOLD}1)${NC} Claude only"
-echo -e "  ${YELLOW}○${NC} ${BOLD}2)${NC} Cursor only"
-echo -e "  ${YELLOW}◉${NC} ${BOLD}3)${NC} Both Claude and Cursor"
+# Step 2: Select target tools with checkbox TUI
+echo -e "${CYAN}Select target tools:${NC}"
+echo -e "${DIM}(Use TAB to toggle, ENTER to confirm)${NC}"
 echo ""
 
-# TUI for target selection
 if [ "$USE_FZF" = true ]; then
-    TARGET=$(printf '%s\n' "Claude only" "Cursor only" "Both" | fzf \
-        --prompt="Select target > " \
-        --height=~30% \
+    TARGETS=()
+    TOOL_OPTIONS=("Claude" "Cursor" "Kiro-CLI" "All")
+
+    SELECTED_TARGETS=$(printf '%s\n' "${TOOL_OPTIONS[@]}" | fzf \
+        --prompt="Select targets > " \
+        --header="Select target tools (TAB to toggle)" \
+        --height=~40% \
         --border \
         --layout=reverse \
-        --color=header:italic)
-    case "$TARGET" in
-        "Claude only") TARGETS=("claude") ;;
-        "Cursor only") TARGETS=("cursor") ;;
-        "Both") TARGETS=("claude" "cursor") ;;
-    esac
+        --color=header:italic,marker:green \
+        -m)
+
+    # Check if "All" is selected
+    if echo "$SELECTED_TARGETS" | grep -q "^All$"; then
+        TARGETS=("claude" "cursor" "kiro")
+    else
+        while IFS= read -r tool; do
+            case "$tool" in
+                "Claude") TARGETS+=("claude") ;;
+                "Cursor") TARGETS+=("cursor") ;;
+                "Kiro-CLI") TARGETS+=("kiro") ;;
+            esac
+        done <<< "$SELECTED_TARGETS"
+    fi
 else
-    read -r TARGET
-    case $TARGET in
-        1) TARGETS=("claude") ;;
-        2) TARGETS=("cursor") ;;
-        3) TARGETS=("claude" "cursor") ;;
-        *)
-            echo -e "${RED}✗ Invalid selection!${NC}"
-            exit 1
-            ;;
-    esac
+    # Fallback: numbered selection with "All" option
+    echo -e "  ${YELLOW}[ ]${NC} ${BOLD}1)${NC} Claude"
+    echo -e "  ${YELLOW}[ ]${NC} ${BOLD}2)${NC} Cursor"
+    echo -e "  ${YELLOW}[ ]${NC} ${BOLD}3)${NC} Kiro-CLI"
+    echo -e "  ${YELLOW}[ ]${NC} ${BOLD}4)${NC} All"
+    echo ""
+    echo -e "${CYAN}Enter numbers to select (comma-separated, e.g., 1,3 or 4 for all):${NC}"
+    read -r SELECTION
+
+    TARGETS=()
+    IFS=',' read -ra NUMBERS <<< "$SELECTION"
+    for num in "${NUMBERS[@]}"; do
+        case $num in
+            1) TARGETS+=("claude") ;;
+            2) TARGETS+=("cursor") ;;
+            3) TARGETS+=("kiro") ;;
+            4) TARGETS=("claude" "cursor" "kiro"); break ;;
+        esac
+    done
 fi
 
+if [ ${#TARGETS[@]} -eq 0 ]; then
+    echo -e "${RED}✗ No targets selected!${NC}"
+    exit 1
+fi
+
+# Determine target directories
 CLAUDE_DIR="$HOME/.claude/skills"
 CURSOR_DIR="$HOME/.cursor/skills"
+KIRO_DIR="$HOME/.kiro/ai/skills"
+
+echo ""
+echo -e "${BLUE}═══════════════════════════════════════${NC}"
+echo -e "${GREEN}✓ Selected targets:${NC}"
+for tool in "${TARGETS[@]}"; do
+    case "$tool" in
+        claude) echo -e "  ${GREEN}☑${NC} Claude" ;;
+        cursor) echo -e "  ${GREEN}☑${NC} Cursor" ;;
+        kiro) echo -e "  ${GREEN}☑${NC} Kiro-CLI" ;;
+    esac
+done
 
 echo ""
 echo -e "${BLUE}═══════════════════════════════════════${NC}"
@@ -153,16 +189,25 @@ echo -e "${MAGENTA}▸ Copying skills...${NC}"
 echo ""
 
 for tool in "${TARGETS[@]}"; do
-    if [ "$tool" = "claude" ]; then
-        TARGET_DIR="$CLAUDE_DIR"
-    else
-        TARGET_DIR="$CURSOR_DIR"
-    fi
+    case "$tool" in
+        claude)
+            TARGET_DIR="$CLAUDE_DIR"
+            TOOL_NAME="Claude"
+            ;;
+        cursor)
+            TARGET_DIR="$CURSOR_DIR"
+            TOOL_NAME="Cursor"
+            ;;
+        kiro)
+            TARGET_DIR="$KIRO_DIR"
+            TOOL_NAME="Kiro-CLI"
+            ;;
+    esac
 
     # Create directory if not exists
     mkdir -p "$TARGET_DIR"
 
-    echo -e "${CYAN}▸ Copying to $tool${NC} ${DIM}($TARGET_DIR)${NC}"
+    echo -e "${CYAN}▸ Copying to $TOOL_NAME${NC} ${DIM}($TARGET_DIR)${NC}"
 
     for skill in "${SELECTED_SKILLS[@]}"; do
         SOURCE="$SKILLS_DIR/$skill"
@@ -176,4 +221,4 @@ echo ""
 echo -e "${BLUE}═══════════════════════════════════════${NC}"
 echo -e "${GREEN}${BOLD}✓ Done! Skills copied successfully.${NC}"
 echo ""
-echo -e "${CYAN}You can now use these skills in Claude/Cursor.${NC}"
+echo -e "${CYAN}You can now use these skills in your IDEs.${NC}"
