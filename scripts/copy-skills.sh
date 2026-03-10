@@ -2,15 +2,24 @@
 
 # Copy skills to Claude/Cursor global skill folders
 
+# Color codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m' # No Color
+
 SKILLS_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
-echo "========================================"
-echo "   Copy Skills to Global Folders"
-echo "========================================"
+echo -e "${BLUE}${BOLD}========================================${NC}"
+echo -e "${BLUE}${BOLD}   Copy Skills to Global Folders${NC}"
+echo -e "${BLUE}${BOLD}========================================${NC}"
 echo ""
 
 # Step 1: List available skills
-echo "Available skills in this project:"
+echo -e "${CYAN}Available skills in this project:${NC}"
 echo ""
 
 cd "$SKILLS_DIR"
@@ -19,20 +28,20 @@ for dir in */; do
     if [ -f "${dir}SKILL.md" ]; then
         SKILL_NAME="${dir%/}"
         SKILLS+=("$SKILL_NAME")
-        echo "  [$(( ${#SKILLS[@]} ))] $SKILL_NAME"
+        echo -e "  ${YELLOW}[$(( ${#SKILLS[@]} ))]${NC} ${BOLD}$SKILL_NAME${NC}"
     fi
 done
 
 if [ ${#SKILLS[@]} -eq 0 ]; then
-    echo "No skills found in this project!"
+    echo -e "${RED}No skills found in this project!${NC}"
     exit 1
 fi
 
 echo ""
-echo "========================================"
+echo -e "${BLUE}========================================${NC}"
 
 # Step 2: Select skills
-echo "Enter skill numbers to copy (comma-separated, or 'all'):"
+echo -e "${CYAN}Enter skill numbers to copy (comma-separated, or 'all'):${NC}"
 read -r SELECTION
 
 SELECTED_SKILLS=()
@@ -50,24 +59,24 @@ else
 fi
 
 if [ ${#SELECTED_SKILLS[@]} -eq 0 ]; then
-    echo "No skills selected!"
+    echo -e "${RED}No skills selected!${NC}"
     exit 1
 fi
 
 echo ""
-echo "Selected skills:"
+echo -e "${GREEN}Selected skills:${NC}"
 for skill in "${SELECTED_SKILLS[@]}"; do
-    echo "  - $skill"
+    echo -e "  ${GREEN}✓${NC} $skill"
 done
 
 echo ""
-echo "========================================"
+echo -e "${BLUE}========================================${NC}"
 
 # Step 3: Select target tools
-echo "Copy to which tool(s)?"
-echo "  [1] Claude only"
-echo "  [2] Cursor only"
-echo "  [3] Both Claude and Cursor"
+echo -e "${CYAN}Copy to which tool(s)?${NC}"
+echo -e "  ${YELLOW}[1]${NC} Claude only"
+echo -e "  ${YELLOW}[2]${NC} Cursor only"
+echo -e "  ${YELLOW}[3]${NC} Both Claude and Cursor"
 echo ""
 read -r TARGET
 
@@ -85,14 +94,14 @@ case $TARGET in
         TARGETS=("claude" "cursor")
         ;;
     *)
-        echo "Invalid selection!"
+        echo -e "${RED}Invalid selection!${NC}"
         exit 1
         ;;
 esac
 
 echo ""
-echo "========================================"
-echo "Copying skills..."
+echo -e "${BLUE}========================================${NC}"
+echo -e "${YELLOW}Copying skills...${NC}"
 echo ""
 
 for tool in "${TARGETS[@]}"; do
@@ -105,7 +114,7 @@ for tool in "${TARGETS[@]}"; do
     # Create directory if not exists
     mkdir -p "$TARGET_DIR"
 
-    echo ">> Copying to $tool ($TARGET_DIR):"
+    echo -e "${CYAN}>> Copying to $tool${NC} ${YELLOW}($TARGET_DIR)${NC}:"
 
     for skill in "${SELECTED_SKILLS[@]}"; do
         SOURCE="$SKILLS_DIR/$skill"
@@ -115,12 +124,12 @@ for tool in "${TARGETS[@]}"; do
 
         # Create symlink
         ln -s "$SOURCE" "$TARGET_DIR/$skill"
-        echo "    ✓ $skill"
+        echo -e "    ${GREEN}✓${NC} $skill"
     done
 done
 
 echo ""
-echo "========================================"
-echo "Done! Skills copied successfully."
+echo -e "${BLUE}========================================${NC}"
+echo -e "${GREEN}${BOLD}Done! Skills copied successfully.${NC}"
 echo ""
-echo "You can now use these skills in Claude/Cursor."
+echo -e "${CYAN}You can now use these skills in Claude/Cursor.${NC}"
