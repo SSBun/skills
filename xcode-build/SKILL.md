@@ -1,5 +1,5 @@
 ---
-name: xcode_build
+name: xcode-build
 description: Guide agents to build, run, or test iOS/macOS apps using Xcode. Helps with building errors, running apps on simulators or devices, and testing features.
 user-invokable: true
 args:

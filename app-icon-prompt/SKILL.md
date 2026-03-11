@@ -1,5 +1,5 @@
 ---
-name: app_icon_prompt
+name: app-icon-prompt
 description: Analyze a project and generate App icon prompts for AI image generators. Helps create perfect app icons for iOS, macOS, websites, and CLI tools.
 user-invokable: true
 args:

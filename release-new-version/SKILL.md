@@ -1,5 +1,5 @@
 ---
-name: release_new_version
+name: release-new-version
 description: Guide agents through releasing a new version of a project - update version, commit changes, create tags, and optionally publish to package managers.
 user-invokable: true
 args:
