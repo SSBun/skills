@@ -70,6 +70,81 @@ For other project types:
 
 Update the version appropriately based on project type.
 
+## Check for README Updates
+
+Before creating the version tag, check if the README needs updating for new features:
+
+1. **Scan the project** for recent changes since the last release:
+   - Look at git log to identify new features, fixes, or changes
+   - Check CHANGELOG.md or HISTORY.md if it exists
+   - Look for any new files or significant modifications
+
+2. **Review the README** to see if it needs updates:
+   - Check if features mentioned in recent commits are documented
+   - Look for outdated information that needs correction
+   - Verify installation/setup instructions are current
+
+3. **If updates are needed**, ask the user:
+   - Do they want to update the README now?
+   - What specific changes should be made?
+
+If the user wants to update the README, help them make the necessary changes before proceeding.
+
+## Check for Official Website
+
+Check if the project contains an official website source:
+
+1. **Look for website-related directories/files**:
+   - `website/`, `docs/`, `site/`, `web/`, `www/`
+   - `docsify/`, `docusaurus/`, `gatsby/`, `next/`, `astro/` directories
+   - `index.html` at root level
+   - Any markdown files in a docs folder
+
+2. **If official website source exists**, ask the user:
+   - Does the official website need to be updated for this release?
+   - What changes should be made?
+
+If the user wants to update the website, help them make the necessary changes before proceeding.
+
+## Commit Documentation Changes
+
+If README or website updates were made:
+
+1. **Stage the changes**:
+   ```bash
+   git add -A
+   ```
+
+2. **Create a commit**:
+   ```bash
+   git commit -m "Update documentation for vX.Y.Z"
+   ```
+
+## Find All Version Strings
+
+When updating the version, be careful as VERSION might be written in multiple places including shell scripts, config files, and source code headers:
+
+1. **Search for version strings** in the project:
+   ```bash
+   # Search for common version patterns
+   grep -r "version" --include="*.json" --include="*.py" --include="*.js" --include="*.ts" --include="*.sh" --include="*.rb" --include="*.toml" --include="*.yml" --include="*.yaml" --include="*.h" --include="*.m" --include="*.swift" --include="*.go" --include="*.rs" . 2>/dev/null | grep -i "version"
+   ```
+
+2. **Check shell scripts carefully**:
+   - Look for `VERSION=` variables in shell scripts
+   - Check for version strings in `conf.py` (Sphinx docs)
+   - Check `Makefile` for version variables
+   - Look for version in source code headers (`__version__`, `VERSION`, etc.)
+
+3. **Update all locations** where version appears:
+   - Config files (package.json, pyproject.toml, Cargo.toml, etc.)
+   - Source code headers
+   - Shell scripts
+   - Documentation
+   - Build scripts
+
+4. **Ask the user** to confirm all version locations have been updated correctly.
+
 ## Commit Version Changes
 
 After updating the version:
