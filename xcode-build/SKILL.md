@@ -43,6 +43,28 @@ If the current project is a component (not the root), ask the user:
 
 Use `AskUserQuestion` to get the root project path.
 
+### Detect Project Platform (iOS, macOS, etc.)
+
+Automatically detect the platform from the project schemes:
+
+```bash
+# Get available schemes and their platforms
+SCHEMES=$(xcodebuild -workspace Project.xcworkspace -list 2>/dev/null || xcodebuild -project Project.xcodeproj -list)
+
+# Analyze schemes to determine platform
+# iOS schemes typically include "iOS" app targets
+# macOS schemes typically include "macOS" app targets
+# watchOS, tvOS schemes follow similar patterns
+```
+
+From the scheme list, automatically determine:
+- **iOS** - if schemes target iPhone/iPad apps
+- **macOS** - if schemes target macOS apps
+- **watchOS** - if schemes target Apple Watch apps
+- **tvOS** - if schemes target Apple TV apps
+
+Use this detected platform to filter available devices automatically.
+
 ## Step 2: Select Target Device
 
 ### Get Available Schemes
@@ -52,64 +74,62 @@ List all available schemes in the project:
 xcodebuild -workspace Project.xcworkspace -list 2>/dev/null || xcodebuild -project Project.xcodeproj -list
 ```
 
-### Get Available Destinations
+### Get Available Devices
 
-First, ask the user about their preferences to filter the list:
-
-**i. Platform Selection**
-Ask: "Which platform do you want to build for?"
-- iOS
-- macOS
-- watchOS
-- tvOS
-
-**ii. Device Type (if iOS)**
-Ask: "What type of device?"
-- iPhone
-- iPad
-
-**iii. Simulator Version**
-Ask: "Which iOS version?" or "Which macOS version?"
-- Latest stable
-- Specific version (e.g., iOS 17.0, macOS 14.0)
-
-### Get Filtered Simulators
-
-After getting preferences, list matching simulators:
+Use `xcrun xctrace list devices` to list both simulators and connected real devices:
 
 ```bash
-# For iOS
-xcrun simctl list devices available | grep -E "iPhone|iPad" | grep "iOS"
-
-# For macOS
-xcrun simctl list devices available | grep -i "mac"
-
-# Get specific version
-xcrun simctl list devices available | grep "iPhone.*17.0"
+# List all devices (simulators + real devices)
+xcrun xctrace list devices
 ```
 
-If simulators are too many, offer to filter further by:
-- Specific iOS version
-- iPhone vs iPad
-- Device model (e.g., iPhone 15 Pro)
-
-### Get Connected Real Devices
+Filter based on the detected project platform:
 
 ```bash
-# List connected devices
-xcrun devicelist
-instruments -s devices
+# For iOS project
+xcrun xctrace list devices | grep -i ios
+
+# For macOS project
+xcrun xctrace list devices | grep -i macos
+
+# For watchOS project
+xcrun xctrace list devices | grep -i watch
+
+# For tvOS project
+xcrun xctrace list devices | grep -i appletv
 ```
+
+### Check for Connected Real Devices
+
+After listing devices, check if any real devices are connected. Real devices typically appear in the output without a simulator runtime version (e.g., "iPhone" without "(iOS 17.0)").
+
+### Ask About Real Devices First
+
+If real devices are connected, ask the user first:
+
+> **Real device detected!**
+>
+> A physical device is connected. Would you like to:
+> - **Use real device**: Test on physical hardware (requires signing)
+> - **Use simulator**: Run on iOS Simulator instead
+>
+> Note: Real devices require Apple Developer account and proper provisioning profiles.
+
+Use `AskUserQuestion` to get their preference.
+
+If no real devices are connected, skip this step and proceed to simulator selection.
 
 ### Ask User to Select Target
 
-Present options based on filtered results and use `AskUserQuestion` to let user select:
+After determining the user's preference (real device vs simulator), present the available options filtered by the detected project platform:
 
-> **Select target device:**
+> **Available devices:**
 > - iPhone 15 Pro (iOS 17.0) - Simulator
 > - iPhone 15 (iOS 17.0) - Simulator
 > - iPhone SE (iOS 16.0) - Simulator
 > - My iPhone (udid) - Real Device
+
+Use `AskUserQuestion` to let user select their preferred device.
 
 ## Step 3: Build or Run Selection
 
@@ -128,8 +148,8 @@ Use `AskUserQuestion` to get their choice.
 
 **For Simulator:**
 ```bash
-# Get simulator UDID
-SIMULATOR_UDID=$(xcrun simctl list devices available | grep "iPhone 15 Pro" | grep -oE "[0-9a-f-]{36}" | head -1)
+# Get simulator UDID using xctrace
+SIMULATOR_UDID=$(xcrun xctrace list devices | grep "iPhone 15 Pro" | grep -oE "[0-9a-f-]{36}" | head -1)
 
 xcodebuild build \
   -workspace Project.xcworkspace \
@@ -219,3 +239,5 @@ Provide the user with:
 - Handle both `.xcodeproj` and `.xcworkspace`
 - Support both simulators and real devices
 - Provide clear error messages and solutions
+- Automatically detect project platform from schemes
+- Ask user first when real devices are connected
