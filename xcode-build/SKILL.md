@@ -168,13 +168,32 @@ xcodebuild build \
   PROVISIONING_PROFILE_NAME="ProfileName"
 ```
 
-**For macOS:**
+**For macOS (clean build for testing):**
+
+When building a macOS project for testing (build and run), always do a full clean build to avoid stale cache issues:
+
+1. **Purge cached app from DerivedData:**
 ```bash
-xcodebuild build \
+DERIVED_DATA=$(xcodebuild -workspace Project.xcworkspace -scheme SchemeName -showBuildSettings 2>/dev/null | grep -m1 BUILD_DIR | awk '{print $3}' | sed 's|/Build/Products||')
+rm -rf "${DERIVED_DATA}/Build/Products/Debug/SchemeName.app"
+```
+
+2. **Clean build from source:**
+```bash
+xcodebuild clean build \
   -workspace Project.xcworkspace \
   -scheme SchemeName \
+  -configuration Debug \
   -destination 'platform=macOS'
 ```
+
+3. **Open the freshly built app:**
+```bash
+APP_PATH=$(xcodebuild -workspace Project.xcworkspace -scheme SchemeName -configuration Debug -destination 'platform=macOS' -showBuildSettings 2>/dev/null | grep -m1 BUILT_PRODUCTS_DIR | awk '{print $3}')
+open "${APP_PATH}/SchemeName.app"
+```
+
+For build-only (no run), a regular `xcodebuild build` without clean is sufficient.
 
 ### Build Options
 
