@@ -1,0 +1,11 @@
+{
+  "name": "ssbun-skills",
+  "description": "Agent skill collection by SSBun",
+  "plugins": [
+    {
+      "name": "ssbun-skills",
+      "path": ".",
+      "description": "Agent skill collection: xcode-build, app-icon-prompt, are-you-ready, release-new-version"
+    }
+  ]
+}
