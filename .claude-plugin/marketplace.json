@@ -1,13 +1,13 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "ssbun-skills",
+  "name": "SSBun-skills",
   "description": "Agent skill collection by SSBun",
   "owner": {
     "name": "CSL"
   },
   "plugins": [
     {
-      "name": "ssbun-skills",
+      "name": "SSBun-skills",
       "source": "./",
       "description": "Agent skill collection: xcode-build, app-icon-prompt, are-you-ready, release-new-version",
       "author": {
