@@ -10,6 +10,7 @@ Agent skill collection for [Claude Code](https://docs.claude.com/en/docs/claude-
 | app-icon-prompt | `/SSBun-skills:app-icon-prompt` | Analyze project and generate App icon prompts for AI image generators. Supports iOS, macOS, web, and CLI. |
 | release-new-version | `/SSBun-skills:release-new-version [version]` | Release new version — version bump, commit, tag, push, and publish to package managers. |
 | are-you-ready | Auto-loaded | Behavioral guidelines for session start: planning defaults, subagent strategy, verification standards. |
+| analyze-project | `/SSBun-skills:analyze-project [path] [depth]` | Deep project analysis. Scans structure, deps, architecture, business logic, APIs, data model, security. Generates detailed MD reports in `docs/`. |
 
 ## Install
 
