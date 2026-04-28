@@ -1,2 +1,8 @@
 # macOS
 .DS_Store
+
+# Editor / tooling caches
+.ruff_cache/
+.cursor/
+.vscode/
+.idea/

@@ -1,11 +1,6 @@
 ---
 name: xcode-build
-description: Guide agents to build, run, or test iOS/macOS apps using Xcode. Helps with building errors, running apps on simulators or devices, and testing features.
-user-invokable: true
-args:
-  - name: project_path
-    description: Path to the Xcode project (optional, defaults to current directory)
-    required: false
+description: Use when the user wants to build, run, or test iOS/macOS/watchOS/tvOS apps with Xcode or xcodebuild. Auto-detects project type and platform, handles simulators and real devices, and resolves common build errors.
 ---
 
 Guide agents through building, running, and testing iOS/macOS applications using Xcode and xcodebuild.
@@ -17,7 +12,7 @@ First, determine if the current directory contains an Xcode project or is a comp
 ### Check for Xcode Project Files
 
 Look for:
-- `.xcodeproj` files ( Xcode project)
+- `.xcodeproj` files (Xcode project)
 - `.xcworkspace` files (Xcode workspace, often with CocoaPods)
 - `Package.swift` files (Swift Package Manager)
 

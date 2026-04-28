@@ -1,0 +1,82 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq + yq
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+          sudo curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Validate plugin.json
+        run: |
+          jq . .claude-plugin/plugin.json > /dev/null
+          jq -e '.name and .version and .description and (.skills | type == "array")' .claude-plugin/plugin.json > /dev/null
+
+      - name: Validate marketplace.json
+        run: |
+          jq . .claude-plugin/marketplace.json > /dev/null
+          jq -e '.name and (.plugins | type == "array" and length > 0)' .claude-plugin/marketplace.json > /dev/null
+
+      - name: Verify every declared skill resolves
+        run: |
+          fail=0
+          for s in $(jq -r '.skills[]' .claude-plugin/plugin.json); do
+            f="${s#./}/SKILL.md"
+            if [ ! -f "$f" ]; then
+              echo "::error::Missing $f"
+              fail=1
+            fi
+          done
+          exit $fail
+
+      - name: Validate SKILL.md frontmatter
+        run: |
+          fail=0
+          for f in $(find . -name SKILL.md -not -path './node_modules/*'); do
+            # Frontmatter must start at line 1 and contain name + description
+            if ! head -1 "$f" | grep -q '^---$'; then
+              echo "::error::$f missing frontmatter opener"
+              fail=1
+              continue
+            fi
+            fm=$(awk '/^---$/{c++; next} c==1{print} c==2{exit}' "$f")
+            name=$(echo "$fm" | yq -r '.name // ""' 2>/dev/null || true)
+            desc=$(echo "$fm" | yq -r '.description // ""' 2>/dev/null || true)
+            if [ -z "$name" ] || [ -z "$desc" ]; then
+              echo "::error::$f frontmatter missing name or description"
+              fail=1
+            fi
+          done
+          exit $fail
+
+      - name: Validate command frontmatter (if commands/ exists)
+        run: |
+          [ -d commands ] || exit 0
+          fail=0
+          for f in commands/*.md; do
+            [ -f "$f" ] || continue
+            if ! head -1 "$f" | grep -q '^---$'; then
+              echo "::error::$f missing frontmatter opener"
+              fail=1
+              continue
+            fi
+            fm=$(awk '/^---$/{c++; next} c==1{print} c==2{exit}' "$f")
+            desc=$(echo "$fm" | yq -r '.description // ""' 2>/dev/null || true)
+            if [ -z "$desc" ]; then
+              echo "::error::$f command missing description"
+              fail=1
+            fi
+          done
+          exit $fail

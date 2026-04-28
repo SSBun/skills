@@ -1,14 +1,6 @@
 ---
 name: analyze-project
-description: Deep analysis of a software project. Scans structure, dependencies, architecture, business logic, APIs, data model, security, quality, build/deploy, and git history. Generates detailed MD reports in a docs folder.
-user-invokable: true
-args:
-  - name: project_path
-    description: Path to the project root (optional, defaults to current directory)
-    required: false
-  - name: depth
-    description: "Analysis depth: quick (structure only), standard (+ architecture, deps, data flow), deep (all reports + security + quality)"
-    required: false
+description: Use when the user wants a deep multi-report analysis of a software project. Scans structure, dependencies, architecture, business logic, APIs, data model, security, quality, build/deploy, and git history via parallel subagents and writes detailed MD reports under docs/analysis/.
 ---
 
 Analyze a software project and generate detailed analysis reports.
@@ -32,11 +24,11 @@ Analyze a software project and generate detailed analysis reports.
 
 ## Output Structure
 
-All reports go to `docs/` in the project root:
+All reports go to `docs/analysis/` in the project root (avoids colliding with existing user docs):
 
 ```
-docs/
-├── SUMMARY.md              # Executive summary + analysis index
+docs/analysis/
+├── SUMMARY.md              # Executive summary + analysis index (synthesized in Phase 3, no dedicated prompt)
 ├── project-structure.md    # Directory layout, entry points, module boundaries
 ├── dependencies.md         # Package graph, versions, licenses
 ├── development-history.md  # Contribution patterns, churn, release cadence
@@ -50,13 +42,15 @@ docs/
 └── quality-report.md       # Test strategy, coverage, linting, type safety (deep only)
 ```
 
+> Note: `templates/SUMMARY.md` exists but has no matching prompt file. Phase 3 fills it inline by aggregating findings from the other reports — this is intentional, not a missing prompt.
+
 ## Execution Workflow
 
 ### Step 1: Setup
 
 1. Determine `project_path` (default: current directory)
 2. Determine `depth` (default: `standard`)
-3. Create `docs/` directory if not exists
+3. Create `docs/analysis/` directory if not exists
 4. Auto-detect tech stack by scanning manifest/lockfiles:
    - `package.json` / `yarn.lock` / `pnpm-lock.yaml` → Node.js/JS
    - `Cargo.toml` / `Cargo.lock` → Rust
@@ -74,15 +68,15 @@ docs/
 Spawn parallel subagents for each Phase 1 scan. Each subagent:
 - Reads the corresponding prompt from `prompts/`
 - Writes output using the corresponding template from `templates/`
-- Saves to `docs/<report>.md`
+- Saves to `docs/analysis/<report>.md`
 
 All Phase 1 subagents run concurrently:
 
 ```
-Agent 1: scan-structure     → docs/project-structure.md
-Agent 2: scan-dependencies  → docs/dependencies.md
-Agent 3: scan-build         → docs/build-and-deploy.md
-Agent 4: scan-git-history   → docs/development-history.md
+Agent 1: scan-structure     → docs/analysis/project-structure.md
+Agent 2: scan-dependencies  → docs/analysis/dependencies.md
+Agent 3: scan-build         → docs/analysis/build-and-deploy.md
+Agent 4: scan-git-history   → docs/analysis/development-history.md
 ```
 
 ### Step 3: Phase 2 — Deep Analysis (Parallel Subagents)
@@ -91,23 +85,23 @@ Spawn parallel subagents for each Phase 2 analysis. Each subagent:
 - Reads Phase 1 outputs for context
 - Reads the corresponding prompt
 - Writes output using the corresponding template
-- Saves to `docs/<report>.md`
+- Saves to `docs/analysis/<report>.md`
 
 Standard depth subagents:
 
 ```
-Agent 5: analyze-architecture     → docs/architecture.md
-Agent 6: analyze-data-flow        → docs/data-flow.md
-Agent 7: analyze-process          → docs/process-analysis.md
-Agent 8: analyze-api-surface      → docs/api-surface.md
-Agent 9: analyze-data-model       → docs/data-model.md
+Agent 5: analyze-architecture     → docs/analysis/architecture.md
+Agent 6: analyze-data-flow        → docs/analysis/data-flow.md
+Agent 7: analyze-process          → docs/analysis/process-analysis.md
+Agent 8: analyze-api-surface      → docs/analysis/api-surface.md
+Agent 9: analyze-data-model       → docs/analysis/data-model.md
 ```
 
 Deep-only additional subagents:
 
 ```
-Agent 10: analyze-security        → docs/security-review.md
-Agent 11: analyze-quality         → docs/quality-report.md
+Agent 10: analyze-security        → docs/analysis/security-review.md
+Agent 11: analyze-quality         → docs/analysis/quality-report.md
 ```
 
 ### Step 4: Phase 3 — Synthesis
@@ -115,7 +109,7 @@ Agent 11: analyze-quality         → docs/quality-report.md
 After all Phase 2 subagents complete:
 1. Read all generated reports
 2. Extract key findings from each
-3. Generate `docs/SUMMARY.md` with:
+3. Generate `docs/analysis/SUMMARY.md` (using `templates/SUMMARY.md` as the structure) with:
    - Executive summary section
    - Analysis index table linking to each report
 
@@ -123,7 +117,7 @@ After all Phase 2 subagents complete:
 
 Tell user:
 - How many reports generated
-- Where they are (docs/ path)
+- Where they are (`docs/analysis/` path)
 - Top 3 findings across all reports
 
 ## Template Format

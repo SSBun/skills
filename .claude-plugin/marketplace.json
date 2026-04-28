@@ -1,5 +1,4 @@
 {
-  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "SSBun-skills",
   "description": "Agent skill collection by SSBun",
   "owner": {
@@ -9,14 +8,15 @@
     {
       "name": "SSBun-skills",
       "source": "./",
-      "description": "Agent skill collection: xcode-build, app-icon-prompt, are-you-ready, release-new-version",
+      "description": "Agent skill collection: xcode-build, app-icon-prompt, release-new-version, analyze-project",
+      "version": "1.2.0",
       "author": {
         "name": "CSL"
       },
       "homepage": "https://github.com/SSBun/skills",
       "repository": "https://github.com/SSBun/skills",
       "license": "MIT",
-      "keywords": ["xcode", "ios", "macos", "app-icon", "release"],
+      "keywords": ["xcode", "ios", "macos", "swift", "app-icon", "release", "project-analysis", "skills"],
       "category": "workflow"
     }
   ]

@@ -1,11 +1,6 @@
 ---
 name: app-icon-prompt
-description: Analyze a project and generate App icon prompts for AI image generators. Helps create perfect app icons for iOS, macOS, websites, and CLI tools.
-user-invokable: true
-args:
-  - name: project_path
-    description: Path to the project to analyze (optional, defaults to current directory)
-    required: false
+description: Use when the user wants to design an app icon or generate a prompt for AI image generators. Analyzes the project's category, platform (iOS/macOS/web/CLI), audience, and brand to produce icon concepts plus a refined prompt with safe-zone and clipping guidance.
 ---
 
 Guide agents through analyzing a project and generating optimal App icon prompts for AI image generators.

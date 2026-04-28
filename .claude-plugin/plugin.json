@@ -1,15 +1,15 @@
 {
   "name": "SSBun-skills",
-  "version": "1.1.0",
-  "description": "Agent skill collection: xcode-build, app-icon-prompt, are-you-ready, release-new-version, analyze-project",
+  "version": "1.2.0",
+  "description": "Agent skill collection: xcode-build, app-icon-prompt, release-new-version, analyze-project",
   "author": {
     "name": "CSL"
   },
   "license": "MIT",
+  "keywords": ["xcode", "ios", "macos", "swift", "app-icon", "release", "project-analysis", "skills"],
   "skills": [
     "./xcode-build",
     "./app-icon-prompt",
-    "./are-you-ready",
     "./release-new-version",
     "./analyze-project"
   ]

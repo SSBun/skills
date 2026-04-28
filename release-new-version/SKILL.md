@@ -1,14 +1,6 @@
 ---
 name: release-new-version
-description: Guide agents through releasing a new version of a project - update version, commit changes, create tags, and optionally publish to package managers.
-user-invokable: true
-args:
-  - name: version
-    description: The version to release (e.g., 1.2.3). If not provided, will prompt for version.
-    required: false
-  - name: skip_push
-    description: If true, skip pushing to remote
-    required: false
+description: Use when the user wants to release a new version of a project (npm, PyPI, Cargo, Xcode/agvtool, Homebrew, CocoaPods, generic). Bumps version across all locations, commits, tags, optionally pushes, and walks through publishing — confirming each destructive step.
 ---
 
 Guide developers through releasing a new version of the project correctly.
@@ -24,7 +16,7 @@ git status
 If there are uncommitted changes, ask the user what to do:
 - **Commit them**: Proceed with versioning
 - **Stash them**: Run `git stash`, complete the release, then `git stash pop`
-- **Discard them**: Run `git checkout -- .` (only if user explicitly confirms)
+- **Discard them**: This is destructive. Use `AskUserQuestion` to confirm in writing, then discard only the specific files the user names. Never run `git checkout -- .` or `git reset --hard` blanket-style without an explicit, written "yes, discard everything" from the user.
 
 Wait for user input before proceeding.
 
@@ -110,9 +102,10 @@ If the user wants to update the website, help them make the necessary changes be
 
 If README or website updates were made:
 
-1. **Stage the changes**:
+1. **Stage only the doc files you touched** — never `git add -A` (it can sweep in `.env`, credentials, lockfiles you didn't intend to commit). List the specific paths:
    ```bash
-   git add -A
+   git status               # confirm what changed
+   git add README.md docs/  # add only the doc paths you actually modified
    ```
 
 2. **Create a commit**:
@@ -149,9 +142,10 @@ When updating the version, be careful as VERSION might be written in multiple pl
 
 After updating the version:
 
-1. **Stage the changes**:
+1. **Stage only the version-bump files** — never `git add -A`. List the specific paths returned by the version-string search:
    ```bash
-   git add -A
+   git status                                                  # confirm what changed
+   git add package.json pyproject.toml Cargo.toml CHANGELOG.md # adjust to your stack
    ```
 
 2. **Create a commit** with a descriptive message:
