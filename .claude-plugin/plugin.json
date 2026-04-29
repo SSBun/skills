@@ -1,6 +1,6 @@
 {
   "name": "SSBun-skills",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Agent skill collection: xcode-build, app-icon-prompt, release-new-version, analyze-project",
   "author": {
     "name": "CSL"
@@ -14,9 +14,9 @@
     "./analyze-project"
   ],
   "commands": [
-    "./commands/xcode-build",
-    "./commands/app-icon-prompt",
-    "./commands/release-new-version",
-    "./commands/analyze-project"
+    "./commands/xcode-build.md",
+    "./commands/app-icon-prompt.md",
+    "./commands/release-new-version.md",
+    "./commands/analyze-project.md"
   ]
 }
